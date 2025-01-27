@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/branch")
 @Slf4j
@@ -21,9 +23,12 @@ public class BranchController {
     @Autowired
     private BranchService branchService;
 
-    @GetMapping
-    public Page<BranchDTO> fetchAllBranches(@PageableDefault Pageable pageable){
-        return branchService.fetchBranches(pageable);
+    @PostMapping
+    public Page<BranchDTO> fetchAllBranches(
+            @RequestParam String filterOr,
+            @RequestParam String filterAnd,
+            @PageableDefault Pageable pageable){
+        return branchService.fetchBranches(filterOr, filterAnd, pageable);
     }
 
     @PostMapping
@@ -55,14 +60,16 @@ public class BranchController {
     }
 
     @GetMapping("/employees/{branchCode}")
-    public Page<BranchEmployeeDTO> fetchEmployees(@PageableDefault Pageable pageable, @PathVariable String branchCode){
+    public Page<BranchEmployeeDTO> fetchEmployees(@RequestParam String filterOr,
+                                                  @RequestParam String filterAnd,
+                                                  @PathVariable String branchCode,
+                                                  @PageableDefault Pageable pageable){
         try {
-            return branchService.fetchEmployees(branchCode,pageable);
+            return branchService.fetchEmployees(filterAnd, filterOr, branchCode,pageable);
         }catch (Exception e){
             log.error("Exception occurred while fetching branch employee for branch code : {}",branchCode, e);
             throw new RuntimeException(e.getMessage());
         }
     }
-
 
 }

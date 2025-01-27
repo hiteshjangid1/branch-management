@@ -7,12 +7,15 @@ import com.talentica.branch_management.entity.Branch;
 import com.talentica.branch_management.entity.PinCodeMaster;
 import com.talentica.branch_management.mapper.BranchMapper;
 import com.talentica.branch_management.repository.BranchRepository;
+import com.talentica.branch_management.util.QueryBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -33,16 +36,24 @@ public class BranchService {
     @Autowired
     private BranchEmployeeService branchEmployeeService;
 
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
     /**
      *
-     * @param pageable page size and page number for branch list
-     * @return Paged view of the given branches
+     * @param filterAnd And Filters for search and filter branches
+     * @param filterOr Or filter for search and filter branches
+     * @param pageable page no and page size for result data
+     * @return Paginated response for branches data
      */
-    public Page<BranchDTO> fetchBranches(Pageable pageable) {
+    public Page<BranchDTO> fetchBranches(String filterAnd, String filterOr, Pageable pageable) {
         log.info("Fetching all branch details for page details: {}", pageable);
-        Page<Branch> pagedBranches = branchRepository.findAll(pageable);
-        List<BranchDTO> branchDTOs = BranchMapper.INSTANCE.map(pagedBranches.toList());
-        return new PageImpl<>(branchDTOs, pageable, pagedBranches.getTotalElements());
+        Query query = QueryBuilder.buildQuery(filterAnd,filterOr);
+        Query pagedQuery = query.with(pageable);
+        List<Branch> pagedBranches = mongoTemplate.find(pagedQuery, Branch.class);
+        long totalBranches = mongoTemplate.count(query,Branch.class);
+        List<BranchDTO> branchDTOs = BranchMapper.INSTANCE.map(pagedBranches);
+        return new PageImpl<>(branchDTOs, pageable, totalBranches);
     }
 
     /**
@@ -85,14 +96,15 @@ public class BranchService {
     }
 
     /**
-     *
+     * @param filterAnd And filter (single string parameter)
+     * @param filterOr Or filter (single string parameter)
      * @param branchCode Code for the branch for which employees are to be fetched
      * @return Paginated view of employee details.
      */
-    public Page<BranchEmployeeDTO> fetchEmployees(String branchCode,Pageable pageable){
+    public Page<BranchEmployeeDTO> fetchEmployees(String filterAnd, String filterOr, String branchCode,Pageable pageable){
         log.info("Fetching employee details for branch code : {} and page no : {} and page size : {}",branchCode,pageable.getPageNumber(),pageable.getPageSize());
         validateBranchCodeUniqueness(branchCode,true);
-        return branchEmployeeService.fetchEmployees(branchCode,pageable);
+        return branchEmployeeService.fetchEmployees(filterAnd, filterOr, branchCode,pageable);
     }
 
 
