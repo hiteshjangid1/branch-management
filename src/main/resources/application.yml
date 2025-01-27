@@ -1,0 +1,9 @@
+server:
+  port: 12345
+spring:
+  application:
+    name: branch-management
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017
+      database: branch-management
