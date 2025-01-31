@@ -1,14 +1,12 @@
 package com.talentica.branch_management.dto.response;
 
 import com.talentica.branch_management.enums.Gender;
-import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 
 import java.util.Date;
 
 @Data
-public class BranchEmployeeDTO {
+public class EmployeeDTO {
     private String firstName;
     private String lastName;
     private String email;

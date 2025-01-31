@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -26,4 +27,6 @@ public class Branch {
     private String state;
     private String city;
     private String district;
+    @Builder.Default
+    private boolean active = true;
 }
